@@ -295,7 +295,7 @@ if __name__ == '__main__':
 	sc = SecurityCenter('127.0.0.1')
 	
 	# Path to your license key file.
-	licenseKeyPath='/tmp/tenable-SecurityCenter-4.8-DEMO.key'
+	licenseKeyPath='/tmp/tenable-SecurityCenter-4.8.key'
 	
 	# Nessus activation code
 	nessusActivationCode=""
