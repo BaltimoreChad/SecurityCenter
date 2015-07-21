@@ -150,7 +150,7 @@ class SecurityCenter:
 			print e
 			return None
 
-		# If the response status is not 200 OK, there is an error.
+		# If the response error code is not 0, there is an error.
 		if jsonData['error_code'] != 0:
 			sys.exit(jsonData['error_msg'])
 
