@@ -22,7 +22,7 @@
 # 2. Run the script.  This will delete ALL scan results    #
 # This CANNOT be undone.                                   #
 #                                                          #
-# Version 1.0 		                                       #
+# Version 1.0 		                                   #
 # Created by: Chad D                                       #
 ############################################################   
 
