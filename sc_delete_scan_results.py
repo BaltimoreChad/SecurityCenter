@@ -21,10 +21,13 @@
 # variables are set with dummy values).                    #
 # 2. Run the script.  This will delete ALL scan results    #
 # This CANNOT be undone.                                   #
+# 3. Running this script as the 'admin' user will          #
+# delete ALL scan results that are manageble by the admin. #
+# THIS CANNOT BE UNDONE!!                                  #
 #                                                          #
-# Version 1.0 		                                   #
+# Version 1.1 		                                       #
 # Created by: Chad D                                       #
-############################################################   
+############################################################
 
 import requests
 import json

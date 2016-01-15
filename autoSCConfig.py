@@ -9,7 +9,7 @@
 # bottom of this script are filled in prior to running.    #
 #                                                          #
 #                                                          #
-# INSTRUCTIONS FOR USE:   				   #
+# INSTRUCTIONS FOR USE:   				                   #
 # This script uses 'requests' and 'urllib3', please make   #
 # sure those are installed on your system. You can install #
 # these using pip.                                         #
