@@ -25,7 +25,7 @@
 # delete ALL scan results that are manageble by the admin. #
 # THIS CANNOT BE UNDONE!!                                  #
 #                                                          #
-# Version 1.1 		                                       #
+# Version 1.1 		                                   #
 # Created by: Chad D                                       #
 ############################################################
 
