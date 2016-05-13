@@ -40,9 +40,9 @@ import requests
 requests.packages.urllib3.disable_warnings()
 
 # Fill in these variables
-url = "https://172.26.85.19"
-username = "c.dombrowski"
-password = "LabPass1"
+url = "https://"
+username = ""
+password = ""
 
 # Do not fill in these variables
 token = ''
