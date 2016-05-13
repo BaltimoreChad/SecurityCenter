@@ -1,4 +1,3 @@
-"""
 ############################################################
 # Name: sc_api_template.py                                 #
 # Description: SecurityCenter 5 API Template.              #
@@ -34,7 +33,6 @@
 # Version 1.0                                              #
 # Created by: Chad D                                       #
 ############################################################
-"""
 
 import json
 import sys
