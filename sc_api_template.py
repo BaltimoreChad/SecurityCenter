@@ -31,7 +31,7 @@
 # own API functions.                                       #
 # 3. For some examples, check out my github:               #
 # https://github.com/BaltimoreChad                         #
-# Version 1.0 		                                       #
+# Version 1.0 		                                   #
 # Created by: Chad D                                       #
 ############################################################
 
