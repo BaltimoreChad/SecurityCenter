@@ -1,7 +1,6 @@
 ############################################################
 # Name: sc_api_template.py                                 #
-# Description: Removes all scan results from               #
-# SecurityCenter 5.x.                                      #
+# Description: SecurityCenter 5 API Template.              #
 #                                                          #
 # **DISCLAIMER**                                           #
 # This script was designed for SecurityCenter 5.x using    #
