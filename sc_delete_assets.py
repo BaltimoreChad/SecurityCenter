@@ -22,7 +22,7 @@
 # 2. Run the script.  This will delete ALL managed assets  #
 # This CANNOT be undone.                                   #
 #                                                          #
-# Version 1.5		                                    #
+# Version 1.5		                                   #
 # Created by: Chad D                                       #
 ############################################################
 
