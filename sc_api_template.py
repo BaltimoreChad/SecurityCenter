@@ -35,8 +35,9 @@
 ############################################################
 
 import json
-import sys
 import re
+import sys
+
 import requests
 
 requests.packages.urllib3.disable_warnings()
@@ -46,6 +47,7 @@ class SecurityCenterAPI(object):
     """
     Class to handle our SecurityCenter API calls.
     """
+
     def __init__(self, username: str, password: str, url: str):
         self.username = username
         self.password = password
@@ -60,7 +62,7 @@ class SecurityCenterAPI(object):
         """
         return '{0}{1}'.format(url, resource)
 
-    def connect(self, method: str, resource: str, data: str = None, headers: str = None):
+    def connect(self, method: str, resource: str, data: dict = None, headers: dict = None):
         """ The connect method is used to connect to SC and pass our API calls."""
         if headers is None:
             headers = {'Content-type': 'application/json',
@@ -92,8 +94,8 @@ class SecurityCenterAPI(object):
         return resp
 
     def login(self):
-        """ 
-        Logs into SecurityCenter and retrieves our token and cookie. We create a separate header here since we do not 
+        """
+        Logs into SecurityCenter and retrieves our token and cookie. We create a separate header here since we do not
         have a X-SecurityCenter token yet.
         """
         headers = {'Content-Type': 'application/json'}
@@ -110,27 +112,40 @@ class SecurityCenterAPI(object):
         self.token = data.json()['response']['token']
         return self.cookie, self.token
 
-    """
-    UNCOMMENT THE CODE BELOW TO GATHER YOUR MANAGED ASSETS. THIS WAS LEFT IN FOR REFERENCE.
-    """
-    # def get_assets(self):
-    #     # Initiate an empty asset list.
-    #     assets = []
-    # 
-    #     # Use the connect function with a GET method and /rest/asset resource.
-    #     data = self.connect('GET', '/rest/asset')
-    # 
-    #     # Store the manageable assets in the results variable.
-    #     results = data.json()['response']['manageable']
-    # 
-    #     # If results is empty, there are no manageable assets and the script exits.
-    #     if not results:
-    #         sys.exit("This user has no managed assets.")
-    #     else:
-    #         # For each asset in our results file, append the asset ID to our asset list.
-    #         for i in results:
-    #             assets.append(i['id'])
-    #     return assets
+    def get_assets(self):
+        """
+        Queries for a list of manageable assets for the currently in user.
+
+        :return list assets:   A list of manageable assets for the current user.
+        """
+        # Initiate an empty asset list.
+        assets = []
+
+        # Use the connect function with a GET method and /rest/asset resource.
+        data = self.connect('GET', '/rest/asset')
+
+        # Store the manageable assets in the results variable.
+        results = data.json()['response']['manageable']
+
+        # If results is empty, there are no manageable assets and the script exits.
+        if not results:
+            sys.exit("This user has no managed assets.")
+        else:
+            # For each asset in our results file, append the asset ID to our asset list.
+            for i in results:
+                assets.append(i['id'])
+        return assets
+
+    def get_host_repository_info(self, repository_id: str, host: str):
+        """
+        Queries the repository using the provided data as a query and returns the details related to the host.
+
+        :param repository_id     :  The repository that you'd like to query for the host.
+        :param host              :  The host that you'd like to retrieve information on.
+        :return dict data        :  The host details retrieved from the repository.
+        """
+        data = self.connect('GET', '/rest/repository/{}/ipInfo'.format(repository_id), data={"ip": host})
+        return data.json()['response']
 
 
 if __name__ == '__main__':
@@ -158,3 +173,12 @@ if __name__ == '__main__':
     #     for asset in asset_list:
     #         print("Asset ID: {}".format(asset))
 
+    """
+    UNCOMMENT THE CODE BELOW TO GATHER HOST DETAILS FROM THE REPOSITORY. THIS INCLUDES LAST SCAN TIME.
+    THIS WAS LEFT IN FOR REFERENCE.
+    """
+    # host = ""
+    # repository_id = ""
+    # host_details = sc.get_host_repository_info(repository_id=repository_id, host=host)
+    # print("Hi!  I'm host: {}".format(host_details['ip']))
+    # print("I was last scanned on: {}".format(host_details['lastScan']))
