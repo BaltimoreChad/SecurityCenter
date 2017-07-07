@@ -55,12 +55,11 @@ class SecurityCenterAPI(object):
         self.cookie = None
         self.token = None
 
-    @staticmethod
-    def build_url(resource):
+    def build_url(self, resource):
         """
         Formats the SC URL with the requested resource.
         """
-        return '{0}{1}'.format(url, resource)
+        return '{0}{1}'.format(self.url, resource)
 
     def connect(self, method: str, resource: str, data: dict = None, headers: dict = None):
         """ The connect method is used to connect to SC and pass our API calls."""
