@@ -1,4 +1,3 @@
-"""
 ############################################################
 # Name: sc_api_template.py                                 #
 # Description: SecurityCenter 5 API Template.              #
@@ -31,114 +30,154 @@
 # own API functions.                                       #
 # 3. For some examples, check out my github:               #
 # https://github.com/BaltimoreChad                         #
-# Version 1.0                                              #
+# Version 1.5                                              #
 # Created by: Chad D                                       #
 ############################################################
-"""
 
 import json
+import re
 import sys
+
 import requests
+
 requests.packages.urllib3.disable_warnings()
 
-# Fill in these variables
-url = "https://172.26.85.19"
-username = "c.dombrowski"
-password = "LabPass1"
 
-# Do not fill in these variables
-token = ''
-cookie = ''
+class SecurityCenterAPI(object):
+    """
+    Class to handle our SecurityCenter API calls.
+    """
 
-def build_url(restCall):
-    """ Formats the SC URL with the rest API call"""
-    return '{0}{1}'.format(url, restCall)
+    def __init__(self, username: str, password: str, url: str):
+        self.username = username
+        self.password = password
+        self.url = url
+        self.cookie = None
+        self.token = None
 
-def connect(method, resource, data=None, headers=None, cookies=None):
-    """ The connect method is used to connect to SC and pass our API calls."""
-    if headers is None:
-        headers = {'Content-type': 'application/json',
-                   'X-SecurityCenter': str(token)}
-    if data is not None:
-        data = json.dumps(data)
+    def build_url(self, resource):
+        """
+        Formats the SC URL with the requested resource.
+        """
+        return '{0}{1}'.format(self.url, resource)
 
-    if method == "POST":
-        r = requests.post(build_url(resource), data=data, headers=headers, cookies=cookie,
-                          verify=False)
-    elif method == "DELETE":
-        r = requests.delete(build_url(resource), data=data, headers=headers, cookies=cookie,
-                            verify=False)
-    elif method == 'PATCH':
-        r = requests.patch(build_url(resource), data=data, headers=headers, cookies=cookie,
-                           verify=False)
-    else:
-        r = requests.get(build_url(resource), data=data, headers=headers, cookies=cookie,
-                         verify=False)
+    def connect(self, method: str, resource: str, data: dict = None, headers: dict = None):
+        """ The connect method is used to connect to SC and pass our API calls."""
+        if headers is None:
+            headers = {'Content-type': 'application/json',
+                       'X-SecurityCenter': str(self.token)}
+        if data is not None:
+            data = json.dumps(data)
 
-    if r.status_code != 200:
-        e = r.json()
-        print(e['error_msg'])
-        sys.exit()
+        if method == "POST":
+            resp = requests.post(self.build_url(resource), data=data, headers=headers, cookies=self.cookie,
+                                 verify=False)
+        elif method == "DELETE":
+            resp = requests.delete(self.build_url(resource), data=data, headers=headers, cookies=self.cookie,
+                                   verify=False)
+        elif method == 'PATCH':
+            resp = requests.patch(self.build_url(resource), data=data, headers=headers, cookies=self.cookie,
+                                  verify=False)
+        else:
+            resp = requests.get(self.build_url(resource), data=data, headers=headers, cookies=self.cookie,
+                                verify=False)
 
-    return r
+        if resp.status_code != 200:
+            e = resp.json()
+            sys.exit(e['error_msg'])
 
+        if resp.headers.get('set-cookie') is not None:
+            match = re.findall("TNS_SESSIONID=[^,]*", resp.headers.get('set-cookie'))
+            self.cookie = match[1]
 
-def login(uname, pword):
-    """ Logs into SecurityCenter and retrieves our token and cookie.
-    We create a seperate header here since we do not have a X-SecurityCenter token yet."""
-    headers = {'Content-Type':'application/json'}
-    login = {'username': uname, 'password':pword}
+        return resp
 
-    # We use the connect function and pass it a POST method, /rest/token resource,
-    # and our login credentials as data.  We also pass our headers from above for this function.
-    data = connect('POST', '/rest/token', data=login, headers=headers)
+    def login(self):
+        """
+        Logs into SecurityCenter and retrieves our token and cookie. We create a separate header here since we do not
+        have a X-SecurityCenter token yet.
+        """
+        headers = {'Content-Type': 'application/json'}
+        login = {'username': self.username, 'password': self.password}
 
-    # We can pull the cookie out of our data object and store it as a variable.
-    cookie = data.cookies
+        # We use the connect function and pass it a POST method, /rest/token resource,
+        # and our login credentials as data.  We also pass our headers from above for this function.
+        data = self.connect('POST', '/rest/token', data=login, headers=headers)
 
-    # We can alo pull our token out from the returned data as well.
-    token = data.json()['response']['token']
-    return (cookie, token)
+        # We can pull the cookie out of our data object and store it as a variable.
+        self.cookie = data.cookies
 
-# ------ UNCOMMENT THE CODE BELOW TO ENABLE THE FUNCTION.  THIS WAS LEFT IN FOR REFERENCE. ------ #
-# ------    LINES WITH '##' ARE COMMENTS, YOU DO NOT NEED TO UNCOMMENT THOSE LINES.        ------ #
-# def get_assets():
-#     # Initiate an empty asset list.
-#     assets = []
-#
-#     # Use the connect function with a GET method and /rest/asset resource.
-#     data = connect('GET', '/rest/asset')
-#
-#     # Store the manageable assets in the results variable.
-#     results = data.json()['response']['manageable']
-#
-#     # If results is empty, there are no manageable assets and the script exits.
-#     if not results:
-#         sys.exit("This user has no managed assets.")
-#     else:
-#         # For each asset in our results file, append the asset ID to our asset list.
-#         for i in results:
-#             assets.append(i['id'])
-#     return assets
+        # We can alo pull our token out from the returned data as well.
+        self.token = data.json()['response']['token']
+        return self.cookie, self.token
+
+    def get_assets(self):
+        """
+        Queries for a list of manageable assets for the currently in user.
+
+        :return list assets:   A list of manageable assets for the current user.
+        """
+        # Initiate an empty asset list.
+        assets = []
+
+        # Use the connect function with a GET method and /rest/asset resource.
+        data = self.connect('GET', '/rest/asset')
+
+        # Store the manageable assets in the results variable.
+        results = data.json()['response']['manageable']
+
+        # If results is empty, there are no manageable assets and the script exits.
+        if not results:
+            sys.exit("This user has no managed assets.")
+        else:
+            # For each asset in our results file, append the asset ID to our asset list.
+            for i in results:
+                assets.append(i['id'])
+        return assets
+
+    def get_host_repository_info(self, repository_id: str, host: str):
+        """
+        Queries the repository using the provided data as a query and returns the details related to the host.
+
+        :param repository_id     :  The repository that you'd like to query for the host.
+        :param host              :  The host that you'd like to retrieve information on.
+        :return dict data        :  The host details retrieved from the repository.
+        """
+        data = self.connect('GET', '/rest/repository/{}/ipInfo'.format(repository_id), data={"ip": host})
+        return data.json()['response']
 
 
 if __name__ == '__main__':
+    # Fill in these variables
+    url = ""
+    username = ""
+    password = ""
+
     print("Logging in...")
     # This calls the login function and passes it your credentials, no need to modify this.
-    cookie, token = login(username, password)
+    sc = SecurityCenterAPI(url=url, username=username, password=password)
+    cookie, token = sc.login()
 
     # You can call your functions from above here.
     # Currently this prints your cookie and token so you can confirm the login function worked
-	# on your system.
+    # on your system.
     print("This is a template for creating SecurityCenter API Python scripts....")
     print(cookie, token)
 
-    # ------        UNCOMMENT THE CODE BELOW TO GATHER YOUR MANAGED ASSETS.         ------ #
-    # ------                 THIS WAS LEFT IN FOR REFERENCE.                        ------ #
-    # ------ LINES WITH '##' ARE COMMENTS, YOU DO NOT NEED TO UNCOMMENT THOSE LINES.------ #
-    # # Call our get_assets() function and stores our asset IDs as assetList
-    # assetList = get_assets()
-    #
-    # # For each ID in assetList, print it to screen.
-    # for id in assetList:
-    #     print("Asset ID: "+id)
+    """
+    UNCOMMENT THE CODE BELOW TO GATHER YOUR MANAGED ASSETS. THIS WAS LEFT IN FOR REFERENCE.
+    """
+    # asset_list = sc.get_assets()
+    # if asset_list:
+    #     for asset in asset_list:
+    #         print("Asset ID: {}".format(asset))
+
+    """
+    UNCOMMENT THE CODE BELOW TO GATHER HOST DETAILS FROM THE REPOSITORY. THIS INCLUDES LAST SCAN TIME.
+    THIS WAS LEFT IN FOR REFERENCE.
+    """
+    # host = ""
+    # repository_id = ""
+    # host_details = sc.get_host_repository_info(repository_id=repository_id, host=host)
+    # print("Hi!  I'm host: {}".format(host_details['ip']))
+    # print("I was last scanned on: {}".format(host_details['lastScan']))
